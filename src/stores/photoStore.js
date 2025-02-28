@@ -13,6 +13,7 @@ export const usePhotoStore = defineStore('photoStore', () => {
   const fetchPhotos = async (albumIds = []) => {
     loading.value = true;
     error.value = null;
+  
     try {
       let url = 'https://jsonplaceholder.typicode.com/photos';
       if (albumIds.length) {
@@ -34,10 +35,17 @@ export const usePhotoStore = defineStore('photoStore', () => {
       offset.value += limit.value;
     }
   };
+
+  const handleScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      offset.value += limit.value;
+    }
+  };
   // Подгружаем photos в таблице PhotoTable
   const displayedPhotos = computed(() => photos.value.slice(0, offset.value + limit.value));
 
-  return { photos, loading, error, fetchPhotos, loadMore, displayedPhotos };
+  return { photos, loading, error, fetchPhotos, loadMore, displayedPhotos, handleScroll };
 });
 
 //Tемы
