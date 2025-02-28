@@ -1,61 +1,41 @@
+<script setup>
+import { onMounted } from 'vue';
+import { usePhotoStore } from '@/stores/photoStore';
+
+const store = usePhotoStore();
+// Подгруза фото при входе
+onMounted(() => {
+  store.fetchPhotos();
+});
+</script>
+
 <template>
-  <div class="overflow-auto max-h-[600px] border rounded shadow-md" @scroll="onScroll">
-    <table class="w-full border-collapse">
-      <thead>
-          <tr class="bg-gray-200">
-            <th class="p-2 border">ID</th>
-            <th class="p-2 border">Альбом</th>
-            <th class="p-2 border">Название</th>
-            <th class="p-2 border">Ссылка</th>
-            <th class="p-2 border">Мииатюра</th>
-          </tr>
-        </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="photo in displayedPhotos" :key="photo.id" class="border-b">
-          <td class="p-2 border">{{ photo.id }}</td>
-          <td class="p-2 border">{{ photo.albumId }}</td>
-          <td
-            class="p-2 border truncate" :title="photo.title">{{ photo.title }}</td>
-          <td class="p-2 border">
-            <a :href="photo.url" target="_blank" class="underline">Ссылка</a>
-          </td>
-          <td class="p-2 border">
-            <img :src='photo.thumbnailUrl' alt="Thumbnail" class="w-16 h-16" />
+  <div>
+    <table v-if="!store.loading" class="w-full border-collapse">
+      <thead class="sticky top-0 bg-white shadow-md dark:bg-gray-900 dark:text-white">
+        <tr>
+          <th class="border p-2">ID</th>
+          <th class="border p-2">Альбом</th>
+          <th class="border p-2">Заголовок</th>
+          <th class="border p-2">Ссылка</th>
+        </tr>
+      </thead>
+      <tbody class="dark:bg-gray-900 dark:text-white">
+        <tr v-for="photo in store.displayedPhotos" :key="photo.id">
+          <td class="border p-2">{{ photo.id }}</td>
+          <td class="border p-2">{{ photo.albumId }}</td>
+          <td class="border p-2" :title="photo.title">{{ photo.title }}</td>
+          <td class="border p-2">
+            <a :href="photo.url" target="_blank" class="text-blue-500 underline">Открыть</a>
           </td>
         </tr>
       </tbody>
     </table>
-    <div v-if="loading" class="p-4 text-center text-gray-500">Загрузка...</div>
+
+    <div v-else class="text-center p-4">
+      <p class="animate-pulse text-gray-500">Загрузка...</p>
+    </div>
+
+    <button @click="store.loadMore" class="mt-4 p-2 bg-blue-500 text-white rounded">Загрузить еще</button>
   </div>
 </template>
-
-<script setup>
-import { onMounted, computed } from 'vue';
-import { usePhotoStore } from '@/stores/photoStore';
-
-const photoStore = usePhotoStore();
-
-
-const onScroll = (event) => {
-  const { scrollTop, clientHeight, scrollHeight } = event.target;
-  if (scrollTop + clientHeight >= scrollHeight - 5) {
-    photoStore.loadMore();
-  }
-};
-
-const displayedPhotos = computed(() => photoStore.displayedPhotos);
-const loading = computed(() => photoStore.loading);
-
-onMounted(() => {
-  photoStore.fetchPhotos();
-});
-</script>
-
-<style scoped>
-td.truncate {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-</style>
